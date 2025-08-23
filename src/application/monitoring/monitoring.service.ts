@@ -111,24 +111,6 @@ export class MonitoringService implements OnModuleInit {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async startMonitoring() {
-    const postsStarted = await this.linkService.getPostStarted()
-    // const groupPost = groupPostsByType(postsStarted || []);
-    console.log("🚀 ~ MonitoringService ~ startMonitoring ~ groupPost:", postsStarted.length)
-    // for (const element of postsStarted) {
-    //   const itemPublic = this.linksPublic.find(item => item.id === element.id)
-    //   if (itemPublic) {
-    //     itemPublic.delayTime = element.delayTime
-    //   }
-
-    //   const itemPrivate = this.linksPrivate.find(item => item.id === element.id)
-    //   if (itemPrivate) {
-    //     itemPrivate.delayTime = element.delayTime
-    //   }
-    // }
-  }
-
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   SLAVEOF() {
     return this.redisService.SLAVEOF()
