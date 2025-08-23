@@ -22,6 +22,8 @@ import { DelayEntity } from '../setting/entities/delay.entity';
 import { TokenService } from '../token/token.service';
 import { MonitoringConsumer } from './monitoring.process';
 import { KEY_PROCESS_QUEUE } from './monitoring.service.i';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 const proxy_check = require('proxy-check');
 
 dayjs.extend(utc);
@@ -64,7 +66,8 @@ export class MonitoringService implements OnModuleInit {
     private redisService: RedisService,
     private connection: DataSource,
     @InjectQueue(KEY_PROCESS_QUEUE.ADD_COMMENT) private monitoringQueue: Queue,
-    private consumer: MonitoringConsumer
+    private consumer: MonitoringConsumer,
+    private readonly httpService: HttpService,
   ) {
   }
 
@@ -110,6 +113,41 @@ export class MonitoringService implements OnModuleInit {
       return this.startProcessTotalCount()
     }
   }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async startMonitoring() {
+    const postsStarted = await this.linkService.getPostStarted()
+    if (!postsStarted?.length) return;
+
+    const vpsLive = [{
+      id: 1,
+      ip: "160.25.232.64",
+      port: 7000
+    },
+    {
+      id: 2,
+      ip: "160.25.232.64",
+      port: 7001
+    },
+    {
+      id: 3,
+      ip: "160.25.232.64",
+      port: 7002
+    }
+    ]
+    const chunkSize = (postsStarted.length / vpsLive.length);
+    let stt = 0
+    for (let i = 0; i < postsStarted.length; i += chunkSize) {
+      const chunk = postsStarted.slice(i, i + chunkSize);
+      const linkIds = chunk.map(item => item.id)
+      const vps = vpsLive[stt]
+      try {
+        await firstValueFrom(this.httpService.post(`http://${vps.ip}:${vps.port}/monitoring`, { linkIds }))
+      } catch (e) { }
+      stt = stt + 1
+    }
+  }
+
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   SLAVEOF() {
