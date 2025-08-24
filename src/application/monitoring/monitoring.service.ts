@@ -114,41 +114,6 @@ export class MonitoringService implements OnModuleInit {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async startMonitoring() {
-    const postsStarted = await this.linkService.getPostStarted()
-    if (!postsStarted?.length) return;
-
-    const vpsLive = [{
-      id: 1,
-      ip: "160.25.232.64",
-      port: 7000
-    },
-    {
-      id: 2,
-      ip: "160.25.232.64",
-      port: 7001
-    },
-    {
-      id: 3,
-      ip: "160.25.232.64",
-      port: 7002
-    }
-    ]
-    const chunkSize = (postsStarted.length / vpsLive.length);
-    let stt = 0
-    for (let i = 0; i < postsStarted.length; i += chunkSize) {
-      const chunk = postsStarted.slice(i, i + chunkSize);
-      const linkIds = chunk.map(item => item.id)
-      const vps = vpsLive[stt]
-      try {
-        await firstValueFrom(this.httpService.post(`http://${vps.ip}:${vps.port}/monitoring`, { linkIds }))
-      } catch (e) { }
-      stt = stt + 1
-    }
-  }
-
-
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   SLAVEOF() {
     return this.redisService.SLAVEOF()
