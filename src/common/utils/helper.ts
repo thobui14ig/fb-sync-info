@@ -63,6 +63,9 @@ function extractFacebookId(url: string): string | null {
         /comment_id=(\d+)/,                          // comment_id in query params
         /fbid=(\d+)/,                                // fbid in query params
         /facebook\.com\/[^\/]+\/posts\/(\d+)/,
+        /multi_permalinks=(\d+)/,                     // group multi_permalinks
+        /[?&]v=(\d+)/,                                // watch?v=... & watch/live?v=...
+        /groups\/[^\/]+\/permalink\/(\d+)/,
     ];
 
     for (const pattern of patterns) {
