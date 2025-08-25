@@ -126,7 +126,6 @@ export class MonitoringService implements OnModuleInit {
     }
 
     const links = await this.linkService.getLinksWithoutProfile()
-    console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ links:", links.length)
     if (links.length === 0) {
       this.isHandleUrl = false
       return
