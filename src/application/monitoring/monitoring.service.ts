@@ -145,7 +145,7 @@ export class MonitoringService implements OnModuleInit {
           });
           if (exitLink) {
             await this.linkRepository.delete(link.id);
-            return; // skip saving
+            continue;
           }
         }
 
@@ -158,6 +158,7 @@ export class MonitoringService implements OnModuleInit {
         link.postId = postId;
         link.pageId = pageId
         link.content = content;
+        console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ link:", link)
 
         if (type !== LinkType.UNDEFINED) {
           const delayTime = await this.getDelayTime(link.status, type, link.user.delayOnPrivate)
@@ -170,6 +171,7 @@ export class MonitoringService implements OnModuleInit {
               ? await this.facebookService.getPostIdPublicV1(link.linkUrl)
               : null;
         }
+
 
         await this.linkRepository.save(link);
       } catch (error) { }
