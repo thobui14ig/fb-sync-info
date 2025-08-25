@@ -158,7 +158,6 @@ export class MonitoringService implements OnModuleInit {
         link.postId = postId;
         link.pageId = pageId
         link.content = content;
-        console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ link:", link)
 
         if (type !== LinkType.UNDEFINED) {
           const delayTime = await this.getDelayTime(link.status, type, link.user.delayOnPrivate)
@@ -174,7 +173,10 @@ export class MonitoringService implements OnModuleInit {
 
 
         await this.linkRepository.save(link);
-      } catch (error) { }
+      } catch (error) {
+        console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ error:", error)
+
+      }
     }
 
     this.isHandleUrl = false
