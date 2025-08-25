@@ -176,6 +176,7 @@ export class FacebookService {
 
   async getProfileLink(url: string) {
     const postId = extractFacebookId(url);
+
     if (!postId) {
       return {
         type: LinkType.UNDEFINED
