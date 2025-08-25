@@ -126,7 +126,6 @@ export class MonitoringService implements OnModuleInit {
     }
 
     const links = await this.linkService.getLinksWithoutProfile()
-    console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ links:", links)
     if (links.length === 0) {
       this.isHandleUrl = false
       return
@@ -134,44 +133,46 @@ export class MonitoringService implements OnModuleInit {
 
     this.isHandleUrl = true
     for (const link of links) {
-      const { type, name, postId, pageId, content } = await this.facebookService.getProfileLink(link.linkUrl) || {} as any;
+      try {
+        const { type, name, postId, pageId, content } = await this.facebookService.getProfileLink(link.linkUrl) || {} as any;
 
-      if (postId) {
-        const exitLink = await this.linkRepository.findOne({
-          where: {
-            postId,
-            userId: link.userId
+        if (postId) {
+          const exitLink = await this.linkRepository.findOne({
+            where: {
+              postId,
+              userId: link.userId
+            }
+          });
+          if (exitLink) {
+            await this.linkRepository.delete(link.id);
+            return; // skip saving
           }
-        });
-        if (exitLink) {
-          await this.linkRepository.delete(link.id);
-          return; // skip saving
         }
-      }
 
-      if (!link.linkName || link.linkName.length === 0) {
-        link.linkName = name;
-      }
+        if (!link.linkName || link.linkName.length === 0) {
+          link.linkName = name;
+        }
 
-      link.process = type === LinkType.UNDEFINED ? false : true;
-      link.type = type;
-      link.postId = postId;
-      link.pageId = pageId
-      link.content = content;
+        link.process = type === LinkType.UNDEFINED ? false : true;
+        link.type = type;
+        link.postId = postId;
+        link.pageId = pageId
+        link.content = content;
 
-      if (type !== LinkType.UNDEFINED) {
-        const delayTime = await this.getDelayTime(link.status, type, link.user.delayOnPrivate)
-        link.delayTime = delayTime
-      }
+        if (type !== LinkType.UNDEFINED) {
+          const delayTime = await this.getDelayTime(link.status, type, link.user.delayOnPrivate)
+          link.delayTime = delayTime
+        }
 
-      if (postId) {
-        link.postIdV1 =
-          type === LinkType.PUBLIC
-            ? await this.facebookService.getPostIdPublicV1(link.linkUrl)
-            : null;
-      }
+        if (postId) {
+          link.postIdV1 =
+            type === LinkType.PUBLIC
+              ? await this.facebookService.getPostIdPublicV1(link.linkUrl)
+              : null;
+        }
 
-      await this.linkRepository.save(link);
+        await this.linkRepository.save(link);
+      } catch (error) { }
     }
 
     this.isHandleUrl = false
