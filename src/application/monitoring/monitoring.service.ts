@@ -160,7 +160,7 @@ export class MonitoringService implements OnModuleInit {
         link.content = content;
 
         if (type !== LinkType.UNDEFINED) {
-          const delayTime = await this.getDelayTime(link.status, type, link.user.delayOnPrivate)
+          const delayTime = await this.getDelayTime(link.status, type, link.user.delayOnPrivate, link.user.delayOnPublic)
           link.delayTime = delayTime
         }
 
@@ -361,7 +361,7 @@ export class MonitoringService implements OnModuleInit {
     return Promise.all([processLinksPrivate(), processLinksPulic(), processTotalComment()])
   }
 
-  async getDelayTime(status: LinkStatus, type: LinkType, delayOnPrivateUser: number) {
+  async getDelayTime(status: LinkStatus, type: LinkType, delayOnPrivateUser: number, delayOnPublic: number) {
     const setting = await this.delayRepository.find()
 
     if (status === LinkStatus.Started && type === LinkType.PRIVATE) {
@@ -373,7 +373,7 @@ export class MonitoringService implements OnModuleInit {
     }
 
     if (status === LinkStatus.Started && type === LinkType.PUBLIC) {
-      return setting[0].delayOnPublic
+      return delayOnPublic
     }
 
     if (status === LinkStatus.Pending && type === LinkType.PUBLIC) {
