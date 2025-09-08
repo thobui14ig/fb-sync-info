@@ -409,6 +409,7 @@ export class MonitoringService implements OnModuleInit {
       if (response.data.length <= 0) continue
       for (const element of batch) {
         const phone = response?.data?.find(item => item.uid == element.userUid)
+        await this.deleteCmtWaitProcess(element.id)
 
         if (!phone) continue
         const cmt = await this.commentService.getCommentByCmtId(element.linkId, element.commentId)
@@ -417,7 +418,6 @@ export class MonitoringService implements OnModuleInit {
           id: cmt.id,
           phoneNumber: phone.phone
         })
-        await this.deleteCmtWaitProcess(element.id)
       }
     }
   }
