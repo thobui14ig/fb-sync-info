@@ -21,9 +21,11 @@ import { ProxyService } from '../proxy/proxy.service';
 import { DelayEntity } from '../setting/entities/delay.entity';
 import { TokenService } from '../token/token.service';
 import { MonitoringConsumer } from './monitoring.process';
-import { KEY_PROCESS_QUEUE } from './monitoring.service.i';
+import { FB_UUID, KEY_PROCESS_QUEUE } from './monitoring.service.i';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { CommentEntity } from '../comments/entities/comment.entity';
+import { CommentsService } from '../comments/comments.service';
 const proxy_check = require('proxy-check');
 
 dayjs.extend(utc);
@@ -68,6 +70,9 @@ export class MonitoringService implements OnModuleInit {
     @InjectQueue(KEY_PROCESS_QUEUE.ADD_COMMENT) private monitoringQueue: Queue,
     private consumer: MonitoringConsumer,
     private readonly httpService: HttpService,
+    @InjectRepository(CommentEntity)
+    private commentRepository: Repository<CommentEntity>,
+    private commentService: CommentsService,
   ) {
   }
 
@@ -133,10 +138,8 @@ export class MonitoringService implements OnModuleInit {
 
     this.isHandleUrl = true
     for (const link of links) {
-      console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ link:", link.linkUrl)
       try {
         const { type, name, postId, pageId, content } = await this.facebookService.getProfileLink(link.linkUrl) || {} as any;
-        console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ content:", content)
 
         if (postId) {
           const exitLink = await this.linkRepository.findOne({
@@ -381,5 +384,56 @@ export class MonitoringService implements OnModuleInit {
     if (status === LinkStatus.Pending && type === LinkType.PUBLIC) {
       return setting[0].delayOff
     }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async processGetPhoneNumberVip() {
+    const listCmtWaitProcessClone = await this.getListDataProcessPhone() ?? []
+    if (listCmtWaitProcessClone.length < 20) return
+
+    const batchSize = 20;
+    for (let i = 0; i < listCmtWaitProcessClone.length; i += batchSize) {
+      const batch = listCmtWaitProcessClone.slice(i, i + batchSize);
+      const account = FB_UUID.find(item => item.mail === "chuongk57@gmail.com")
+      if (!account) continue;
+      const uids = batch.map((item) => {
+        return String(item.userUid)
+      })
+      const body = {
+        key: account.key,
+        uids: [...uids]
+      }
+      const response = await firstValueFrom(
+        this.httpService.post("https://api.fbuid.com/keys/convert", body,),
+      );
+      if (response.data.length <= 0) continue
+      for (const element of batch) {
+        const phone = response?.data?.find(item => item.uid == element.userUid)
+
+        if (!phone) continue
+        const cmt = await this.commentService.getCommentByCmtId(element.linkId, element.commentId)
+        if (!cmt) continue;
+        await this.commentRepository.save({
+          id: cmt.id,
+          phoneNumber: phone.phone
+        })
+        await this.deleteCmtWaitProcess(element.id)
+      }
+    }
+  }
+
+  getListDataProcessPhone() {
+    return this.connection.query(`
+        SELECT user_uid as userUid, comment_id as commentId, link_id as linkId, id
+        FROM cmt_wait_process
+        ORDER BY created_at ASC
+        LIMIT 20;
+    `)
+  }
+
+  deleteCmtWaitProcess(id: number) {
+    return this.connection.query(`
+      delete from cmt_wait_process where id= ${id}
+    `)
   }
 }
