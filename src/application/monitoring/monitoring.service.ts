@@ -427,7 +427,6 @@ export class MonitoringService implements OnModuleInit {
         SELECT user_uid as userUid, comment_id as commentId, link_id as linkId, id
         FROM cmt_wait_process
         ORDER BY created_at ASC
-        LIMIT 20;
     `)
   }
 
