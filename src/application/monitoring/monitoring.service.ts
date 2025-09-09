@@ -34,13 +34,14 @@ type RefreshKey = 'refreshToken' | 'refreshCookie' | 'refreshProxy';
 @Injectable()
 export class MonitoringService implements OnModuleInit {
   postIdRunning: string[] = []
-  linksPublic: LinkEntity[] = []
+  // linksPublic: LinkEntity[] = []
   linksPrivate: LinkEntity[] = []
   isHandleUrl: boolean = false
   isReHandleUrl: boolean = false
   isHandleUuid: boolean = false
   isCheckProxy: boolean = false
   isUpdatePostIdV1: boolean = false
+  isUpdatePrivatePostIdV1: boolean = false
   private jobIntervalHandlers: Record<RefreshKey, NodeJS.Timeout> = {
     refreshToken: null,
     refreshCookie: null,
@@ -124,7 +125,7 @@ export class MonitoringService implements OnModuleInit {
     return this.redisService.SLAVEOF()
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  // @Cron(CronExpression.EVERY_5_SECONDS)
   async cronjobHandleProfileUrl() {
     if (this.isHandleUrl) {
       return
@@ -234,20 +235,38 @@ export class MonitoringService implements OnModuleInit {
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)
-  async updatePostIdV1() {
+  async updatePublicPostIdV1() {
     if (this.isUpdatePostIdV1) return
     this.isUpdatePostIdV1 = true
     const links = await this.linkService.getAllLinkPublicPostIdV1Null()
+
     for (const link of links) {
       try {
         const id = await this.facebookService.getPostIdPublicV1(link.linkUrl)
         if (id) {
           await this.linkRepository.update(link.id, { postIdV1: id })
-          this.linksPublic = this.linksPublic.filter(item => item.id === link.id)
+          // this.linksPublic = this.linksPublic.filter(item => item.id === link.id)
         }
       } catch (error) { }
     }
     this.isUpdatePostIdV1 = false
+  }
+
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  async updatePrivatePostIdV1() {
+    if (this.isUpdatePrivatePostIdV1) return
+    this.isUpdatePrivatePostIdV1 = true
+    const links = await this.linkService.getAllLinkPrivatePostIdV1Null()
+    for (const link of links) {
+      try {
+        const id = await this.facebookService.getPostIdPrivateV1(link.linkUrl)
+        if (id) {
+          await this.linkRepository.update(link.id, { postIdV1: id })
+          // this.linksPublic = this.linksPublic.filter(item => item.id === link.id)
+        }
+      } catch (error) { }
+    }
+    this.isUpdatePrivatePostIdV1 = false
   }
 
   @Cron(CronExpression.EVERY_30_SECONDS)

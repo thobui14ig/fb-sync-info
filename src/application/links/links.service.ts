@@ -162,6 +162,17 @@ export class LinkService {
     })
   }
 
+  getAllLinkPrivatePostIdV1Null() {
+    return this.repo.find({
+      where: {
+        status: In([LinkStatus.Started, LinkStatus.Pending]),
+        type: LinkType.PRIVATE,
+        postIdV1: IsNull(),
+      }
+    })
+  }
+
+
   processTotalComment() {
     return this.conenction.query(`
       with k1 as(
