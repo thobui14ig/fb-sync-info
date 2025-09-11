@@ -20,6 +20,7 @@ export class GetInfoLinkUseCase {
     }
 
     async getInfoLink(postId: string, i = 0, retryCount = 0): Promise<IGetInfoLinkResponse> | null {
+        console.log("🚀 ~ GetInfoLinkUseCase ~ getInfoLink ~ postId:", postId)
         const proxy = await this.proxyService.getRandomProxy()
         const token = await this.tokenService.getTokenGetInfoActiveFromDb()
 
@@ -64,8 +65,13 @@ export class GetInfoLinkUseCase {
                 content: message ?? description
             }
         } catch (error) {
-            console.log("🚀 ~ GetInfoLinkUseCase ~ getInfoLink ~ error:", error?.message)
+            console.log("🚀 ~ GetInfoLinkUseCase ~ getInfoLink ~ error:", error?.response?.data)
             if (error.response?.data?.error?.code === 100 && (error?.response?.data?.error?.message as string)?.includes('Unsupported get request. Object with ID')) {
+                return {
+                    linkType: LinkType.DIE
+                }
+            }
+            if (error.response?.data?.error?.code === 10 || error.response?.data?.error?.code === 3 || error.response?.data?.error?.code === 100) {
                 return {
                     linkType: LinkType.DIE
                 }
