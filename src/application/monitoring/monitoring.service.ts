@@ -431,10 +431,10 @@ export class MonitoringService implements OnModuleInit {
       );
       if (response.data.length <= 0) continue
       for (const element of batch) {
-        const phone = response?.data?.find(item => item.uid == element.userUid)?.length > 0
+        const phone = response?.data?.find(item => item.uid == element.userUid)
         await this.deleteCmtWaitProcess(element.id)
 
-        if (!phone) continue
+        if (!phone || phone?.phone?.length == 0) continue
         const cmt = await this.commentService.getCommentByCmtId(element.linkId, element.commentId)
         if (!cmt) continue;
         await this.commentRepository.save({
