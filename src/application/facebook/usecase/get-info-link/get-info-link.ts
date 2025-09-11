@@ -54,7 +54,6 @@ export class GetInfoLinkUseCase {
                 }),
             );
             const { name: linkName, id: pageId } = response.data.from || {}
-            console.log("🚀 ~ GetInfoLinkUseCase ~ getInfoLink ~ response.data:", response.data)
             const { id, message = null, description = null } = response.data
 
             return {
