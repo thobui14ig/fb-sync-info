@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bull';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
-import { groupPostsByType } from 'src/common/utils/helper';
+import { getHttpAgent, groupPostsByType } from 'src/common/utils/helper';
 import { RedisService } from 'src/infra/redis/redis.service';
 import { DataSource, Repository } from 'typeorm';
 import { CookieService } from '../cookie/cookie.service';
@@ -423,8 +423,11 @@ export class MonitoringService implements OnModuleInit {
         key: account.key,
         uids: [...uids]
       }
+      const proxy = await this.proxyService.getRandomProxy()
+      if (!proxy) break;
+      const httpsAgent = getHttpAgent(proxy)
       const response = await firstValueFrom(
-        this.httpService.post("https://api.fbuid.com/keys/convert", body,),
+        this.httpService.post("https://api.fbuid.com/keys/convert", body, { httpsAgent }),
       );
       console.log("🚀 ~ MonitoringService ~ processGetPhoneNumberVip ~ response:", response.data)
       if (response.data.length <= 0) continue
