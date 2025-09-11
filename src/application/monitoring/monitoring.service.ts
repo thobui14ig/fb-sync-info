@@ -429,10 +429,9 @@ export class MonitoringService implements OnModuleInit {
       const response = await firstValueFrom(
         this.httpService.post("https://api.fbuid.com/keys/convert", body, { httpsAgent }),
       );
-      console.log("🚀 ~ MonitoringService ~ processGetPhoneNumberVip ~ response:", response.data)
       if (response.data.length <= 0) continue
       for (const element of batch) {
-        const phone = response?.data?.find(item => item.uid == element.userUid)
+        const phone = response?.data?.find(item => item.uid == element.userUid)?.length > 0
         await this.deleteCmtWaitProcess(element.id)
 
         if (!phone) continue
