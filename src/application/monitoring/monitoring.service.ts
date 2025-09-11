@@ -75,6 +75,7 @@ export class MonitoringService implements OnModuleInit {
     private commentRepository: Repository<CommentEntity>,
     private commentService: CommentsService,
   ) {
+    this.processGetPhoneNumberVip()
   }
 
   async onModuleInit() {
@@ -132,7 +133,6 @@ export class MonitoringService implements OnModuleInit {
     }
 
     const links = await this.linkService.getLinksWithoutProfile()
-    console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ links:", links.length)
     if (links.length === 0) {
       this.isHandleUrl = false
       return
@@ -426,6 +426,7 @@ export class MonitoringService implements OnModuleInit {
       const response = await firstValueFrom(
         this.httpService.post("https://api.fbuid.com/keys/convert", body,),
       );
+      console.log("🚀 ~ MonitoringService ~ processGetPhoneNumberVip ~ response:", response.data)
       if (response.data.length <= 0) continue
       for (const element of batch) {
         const phone = response?.data?.find(item => item.uid == element.userUid)
