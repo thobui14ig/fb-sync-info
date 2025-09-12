@@ -20,7 +20,6 @@ export class GetInfoLinkUseCase {
     }
 
     async getInfoLink(postId: string, i = 0, retryCount = 0): Promise<IGetInfoLinkResponse> | null {
-        console.log("🚀 ~ GetInfoLinkUseCase ~ getInfoLink ~ postId:", postId)
         const proxy = await this.proxyService.getRandomProxy()
         const token = await this.tokenService.getTokenGetInfoActiveFromDb()
 

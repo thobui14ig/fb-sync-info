@@ -428,12 +428,11 @@ export class MonitoringService implements OnModuleInit {
       const response = await firstValueFrom(
         this.httpService.post("https://api.fbuid.com/keys/convert", body, { httpsAgent }),
       );
-      console.log("🚀 ~ MonitoringService ~ processGetPhoneNumberVip ~ response:", response.data)
       const logs = {
         body,
         response: response.data
       }
-      await this.insertLogs(JSON.stringify(uids), JSON.stringify(logs))
+      await this.insertLogs(JSON.stringify(uids), JSON.stringify(batch), JSON.stringify(logs))
 
       if (response.data.length <= 0) continue
       for (const element of batch) {
@@ -465,10 +464,10 @@ export class MonitoringService implements OnModuleInit {
     `)
   }
 
-  insertLogs(UID: string, params: string) {
+  insertLogs(UID: string, commentId: string, params: string) {
     return this.connection.query(`
-      INSERT INTO logs (uid, params)
-      VALUES ('${UID}', '${params}');  
+      INSERT INTO logs (uid, cmt_id, params)
+      VALUES ('${UID}', '${commentId}', '${params}');  
     `)
   }
 }
