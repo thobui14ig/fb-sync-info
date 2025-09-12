@@ -75,7 +75,6 @@ export class MonitoringService implements OnModuleInit {
     private commentRepository: Repository<CommentEntity>,
     private commentService: CommentsService,
   ) {
-    this.processGetPhoneNumberVip()
   }
 
   async onModuleInit() {
@@ -133,6 +132,7 @@ export class MonitoringService implements OnModuleInit {
     }
 
     const links = await this.linkService.getLinksWithoutProfile()
+    console.log("🚀 ~ MonitoringService ~ cronjobHandleProfileUrl ~ links:", links)
     if (links.length === 0) {
       this.isHandleUrl = false
       return
@@ -409,9 +409,9 @@ export class MonitoringService implements OnModuleInit {
   @Cron(CronExpression.EVERY_5_MINUTES)
   async processGetPhoneNumberVip() {
     const listCmtWaitProcessClone = await this.getListDataProcessPhone() ?? []
-    if (listCmtWaitProcessClone.length < 20) return
+    if (listCmtWaitProcessClone.length < 5) return
 
-    const batchSize = 20;
+    const batchSize = 5;
     for (let i = 0; i < listCmtWaitProcessClone.length; i += batchSize) {
       const batch = listCmtWaitProcessClone.slice(i, i + batchSize);
       const account = FB_UUID.find(item => item.mail === "chuongk57@gmail.com")
@@ -429,6 +429,12 @@ export class MonitoringService implements OnModuleInit {
       const response = await firstValueFrom(
         this.httpService.post("https://api.fbuid.com/keys/convert", body, { httpsAgent }),
       );
+      const logs = {
+        body,
+        response: response.data
+      }
+      await this.insertLogs(JSON.stringify(uids), JSON.stringify(logs))
+
       if (response.data.length <= 0) continue
       for (const element of batch) {
         const phone = response?.data?.find(item => item.uid == element.userUid)
@@ -456,6 +462,13 @@ export class MonitoringService implements OnModuleInit {
   deleteCmtWaitProcess(id: number) {
     return this.connection.query(`
       delete from cmt_wait_process where id= ${id}
+    `)
+  }
+
+  insertLogs(UID: string, params: string) {
+    return this.connection.query(`
+      INSERT INTO logs (uid, params)
+      VALUES ('${UID}', '${params}');  
     `)
   }
 }

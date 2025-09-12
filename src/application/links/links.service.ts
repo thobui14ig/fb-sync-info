@@ -129,8 +129,9 @@ export class LinkService {
   getLinksWithoutProfile() {
     return this.repo.find({
       where: {
-        process: false,
-        postId: IsNull()
+        // process: false,
+        // postId: IsNull(),
+        id: 4727
       },
       relations: {
         user: true
