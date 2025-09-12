@@ -65,7 +65,7 @@ export class GetInfoLinkUseCase {
                 content: message ?? description
             }
         } catch (error) {
-            console.log("🚀 ~ GetInfoLinkUseCase ~ getInfoLink ~ error:", error?.response?.data)
+            console.log("🚀 ~ GetInfoLinkUseCase ~ getInfoLink ~ error:", error?.message)
             if (error.response?.data?.error?.code === 100 && (error?.response?.data?.error?.message as string)?.includes('Unsupported get request. Object with ID')) {
                 return {
                     linkType: LinkType.DIE
