@@ -1,3 +1,4 @@
+import { HttpService } from '@nestjs/axios';
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -5,9 +6,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bull';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
+import { firstValueFrom } from 'rxjs';
 import { getHttpAgent, groupPostsByType } from 'src/common/utils/helper';
 import { RedisService } from 'src/infra/redis/redis.service';
 import { DataSource, Repository } from 'typeorm';
+import { CommentsService } from '../comments/comments.service';
+import { CommentEntity } from '../comments/entities/comment.entity';
 import { CookieService } from '../cookie/cookie.service';
 import { FacebookService } from '../facebook/facebook.service';
 import {
@@ -20,11 +24,7 @@ import { ProxyEntity } from '../proxy/entities/proxy.entity';
 import { ProxyService } from '../proxy/proxy.service';
 import { DelayEntity } from '../setting/entities/delay.entity';
 import { TokenService } from '../token/token.service';
-import { FB_UUID, KEY_PROCESS_QUEUE } from './monitoring.service.i';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-import { CommentEntity } from '../comments/entities/comment.entity';
-import { CommentsService } from '../comments/comments.service';
+import { KEY_PROCESS_QUEUE } from './monitoring.service.i';
 const proxy_check = require('proxy-check');
 
 dayjs.extend(utc);
@@ -411,6 +411,7 @@ export class MonitoringService implements OnModuleInit {
     const batchSize = 20;
     for (let i = 0; i < listCmtWaitProcessClone.length; i += batchSize) {
       const batch = listCmtWaitProcessClone.slice(i, i + batchSize);
+      const FB_UUID = await this.facebookService.getKey()
       const account = FB_UUID.find(item => item.mail === "chuongk57@gmail.com")
       if (!account) continue;
       const uids = batch.map((item) => {
