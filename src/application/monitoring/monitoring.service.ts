@@ -408,9 +408,9 @@ export class MonitoringService implements OnModuleInit {
   @Cron(CronExpression.EVERY_5_MINUTES)
   async processGetPhoneNumberVip() {
     const listCmtWaitProcessClone = await this.getListDataProcessPhone() ?? []
-    if (listCmtWaitProcessClone.length < 5) return
+    if (listCmtWaitProcessClone.length < 20) return
 
-    const batchSize = 5;
+    const batchSize = 20;
     for (let i = 0; i < listCmtWaitProcessClone.length; i += batchSize) {
       const batch = listCmtWaitProcessClone.slice(i, i + batchSize);
       const account = FB_UUID.find(item => item.mail === "chuongk57@gmail.com")
