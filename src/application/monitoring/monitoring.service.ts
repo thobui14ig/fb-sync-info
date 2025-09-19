@@ -20,7 +20,6 @@ import { ProxyEntity } from '../proxy/entities/proxy.entity';
 import { ProxyService } from '../proxy/proxy.service';
 import { DelayEntity } from '../setting/entities/delay.entity';
 import { TokenService } from '../token/token.service';
-import { MonitoringConsumer } from './monitoring.process';
 import { FB_UUID, KEY_PROCESS_QUEUE } from './monitoring.service.i';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -69,7 +68,6 @@ export class MonitoringService implements OnModuleInit {
     private redisService: RedisService,
     private connection: DataSource,
     @InjectQueue(KEY_PROCESS_QUEUE.ADD_COMMENT) private monitoringQueue: Queue,
-    private consumer: MonitoringConsumer,
     private readonly httpService: HttpService,
     @InjectRepository(CommentEntity)
     private commentRepository: Repository<CommentEntity>,
