@@ -22,7 +22,6 @@ import { CookieModule } from '../cookie/cookie.module';
 import { UserEntity } from '../user/entities/user.entity';
 import { KEY_PROCESS_QUEUE } from './monitoring.service.i';
 import { BullModule } from '@nestjs/bull';
-import { MonitoringConsumer } from './monitoring.process';
 
 @Module({
   imports: [
@@ -33,7 +32,7 @@ import { MonitoringConsumer } from './monitoring.process';
     })
   ],
   controllers: [MonitoringController],
-  providers: [MonitoringService, MonitoringConsumer],
+  providers: [MonitoringService,],
   exports: [MonitoringService],
 })
 export class MonitoringModule { }
