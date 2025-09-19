@@ -20,7 +20,7 @@ import { ProxyEntity } from '../proxy/entities/proxy.entity';
 import { ProxyService } from '../proxy/proxy.service';
 import { DelayEntity } from '../setting/entities/delay.entity';
 import { TokenService } from '../token/token.service';
-import { FB_UUID, KEY_PROCESS_QUEUE } from './monitoring.service.i';
+import { KEY_PROCESS_QUEUE } from './monitoring.service.i';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { CommentEntity } from '../comments/entities/comment.entity';
@@ -411,6 +411,7 @@ export class MonitoringService implements OnModuleInit {
     const batchSize = 20;
     for (let i = 0; i < listCmtWaitProcessClone.length; i += batchSize) {
       const batch = listCmtWaitProcessClone.slice(i, i + batchSize);
+      const FB_UUID = await this.facebookService.getKey()
       const account = FB_UUID.find(item => item.mail === "chuongk57@gmail.com")
       if (!account) continue;
       const uids = batch.map((item) => {
